@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">AI学应用商店</string>
+    <string name="menu_filter">筛选</string>
+    <string name="nav_all">全部</string>
+    <string name="nav_master">核心校</string>
+    <string name="nav_pro">业务校</string>
+    <string name="str_setup">安装</string>
+    <string name="str_app_download">应用安装</string>
+    <string name="str_downloading">正在下载...</string>
+    <string name="str_cancel">取消</string>
+</resources>

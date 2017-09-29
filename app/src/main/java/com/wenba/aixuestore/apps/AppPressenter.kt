@@ -9,6 +9,9 @@ class AppPressenter(appDataRepostory: AppDataRepostory, appView: AppContract.Vie
 
     val tag = "AppPressenter"
 
+    val TYPE_ANDROID = 2
+    val TYPE_IOS = 1
+
     private var mAppView: AppContract.View = checkNotNull(appView)
 
     private var mTasksRepository: AppDataRepostory = checkNotNull(appDataRepostory)
@@ -20,22 +23,27 @@ class AppPressenter(appDataRepostory: AppDataRepostory, appView: AppContract.Vie
                 .subscribe({ response ->
                     val baseInfo = response.data
                     when (filter) {
-                        Filter.ALL -> mAppView.showApps(baseInfo?.list)
+                        Filter.ALL -> mAppView.showApps(Flowable.fromIterable(baseInfo?.list)
+                                .filter({ t: AppInfo ->
+                                    t.appType?.toInt() == TYPE_ANDROID
+                                })
+                                .toList().blockingGet())
                         Filter.MASTER -> mAppView.showApps(Flowable.fromIterable(baseInfo?.list)
                                 .filter({ t: AppInfo ->
                                     !t.appIdentifier!!.contains(".pro")
+                                            && t.appType?.toInt() == TYPE_ANDROID
                                 })
                                 .toList().blockingGet())
                         Filter.PRO -> mAppView.showApps(Flowable.fromIterable(baseInfo?.list)
                                 .filter({ t: AppInfo ->
                                     t.appIdentifier!!.contains(".pro")
+                                            && t.appType?.toInt() == TYPE_ANDROID
                                 })
                                 .toList().blockingGet())
                     }
                     mAppView.showRefresh(false)
                 })
     }
-
 
 
     override fun start() {

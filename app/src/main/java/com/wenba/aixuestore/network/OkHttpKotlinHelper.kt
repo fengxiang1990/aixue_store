@@ -10,7 +10,7 @@ object OkHttpKotlinHelper {
     private var client: OkHttpClient? = null
 
     @JvmStatic
-    fun getOkHttpClient(): OkHttpClient {
+    private fun getOkHttpClient(): OkHttpClient {
         if (client == null) {
             client = OkHttpClient.Builder()
                     .addInterceptor(LogInterceptor()).build()

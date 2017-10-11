@@ -5,6 +5,8 @@
     <string name="nav_master">核心校</string>
     <string name="nav_pro">业务校</string>
     <string name="str_setup">安装</string>
+    <string name="nav_test_env1">测试环境1</string>
+    <string name="nav_test_env2">测试环境2</string>
     <string name="str_app_download">应用安装</string>
     <string name="str_downloading">正在下载...</string>
     <string name="str_cancel">取消</string>

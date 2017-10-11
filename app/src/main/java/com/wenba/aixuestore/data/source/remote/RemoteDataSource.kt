@@ -1,5 +1,6 @@
 package com.wenba.aixuestore.data.source.remote
 
+import android.util.Log
 import com.google.gson.reflect.TypeToken
 import com.wenba.aixuestore.data.source.AppDataSource
 import com.wenba.aixuestore.data.source.BaseAppInfo
@@ -14,6 +15,8 @@ import org.json.JSONObject
 
 
 class RemoteDataSource : AppDataSource {
+
+    val tag = "RemoteDataSource"
 
     override fun loadAppDetail(aKey: String, _api_key: String): Flowable<JSONObject> {
         return Flowable.just(UrlMapping.APP_DETAIL)
@@ -39,7 +42,14 @@ class RemoteDataSource : AppDataSource {
                     map.put("_api_key", _api_key)
                     val response = OkHttpKotlinHelper.postFormSync(url, map)
                     val result = response.body()?.string()
-                    Flowable.just(JsonWrapper.parse<BaseResponse<BaseAppInfo>>(result, object : TypeToken<BaseResponse<BaseAppInfo>>() {}.type))
+                    Log.e(tag, "result->" + result)
+                    val jsonObject = JSONObject(result)
+                    val code = jsonObject["code"]
+                    if (code == 0) {
+                        Flowable.just(JsonWrapper.parse<BaseResponse<BaseAppInfo>>(result, object : TypeToken<BaseResponse<BaseAppInfo>>() {}.type))
+                    } else {
+                        Flowable.just(BaseResponse())
+                    }
                 })
                 .observeOn(AndroidSchedulers.mainThread())
     }

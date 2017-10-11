@@ -18,7 +18,7 @@
 
     <item
         android:id="@+id/menu_filter"
-        android:icon="@mipmap/filter"
+        android:icon="@mipmap/env_change"
         android:title="@string/menu_filter"
         app:showAsAction="always" />
 

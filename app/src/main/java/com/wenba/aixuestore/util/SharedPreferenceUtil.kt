@@ -9,45 +9,50 @@ object SharedPreferenceUtil {
     private val mode = Context.MODE_APPEND
 
     @JvmStatic
-    fun getSharedPreferences(context: Context?): SharedPreferences? {
+    private fun getSharedPreferences(context: Context?): SharedPreferences? {
         return context?.getSharedPreferences(sharedName, mode)
     }
 
     @JvmStatic
     fun save(context: Context?, key: String?, value: Any?) {
-        val editor = context?.getSharedPreferences(sharedName, mode)?.edit()
+        val editor = getSharedPreferences(context)?.edit()
         when (value) {
-            value is String -> editor?.putString(key, value as String?)
-            value is Boolean -> editor?.putBoolean(key, value as Boolean)
-            value is Int -> editor?.putInt(key, value as Int)
-            value is Long -> editor?.putLong(key, value as Long)
-            value is Float -> editor?.putFloat(key, value as Float)
+            is String -> editor?.putString(key, value)
+            is Boolean -> editor?.putBoolean(key, value)
+            is Int -> editor?.putInt(key, value)
+            is Long -> editor?.putLong(key, value)
+            is Float -> editor?.putFloat(key, value)
         }
         editor?.apply()
     }
 
     @JvmStatic
     fun getString(context: Context?, key: String): String? {
-        return context?.getSharedPreferences(sharedName, mode)?.getString(key, null)
+        return getSharedPreferences(context)?.getString(key, null)
     }
 
     @JvmStatic
     fun getBoolean(context: Context?, key: String): Boolean? {
-        return context?.getSharedPreferences(sharedName, mode)?.getBoolean(key, false)
+        return getSharedPreferences(context)?.getBoolean(key, false)
     }
 
     @JvmStatic
     fun getLong(context: Context?, key: String): Long? {
-        return context?.getSharedPreferences(sharedName, mode)?.getLong(key, -1)
+        return getSharedPreferences(context)?.getLong(key, -1)
     }
 
     @JvmStatic
     fun getFloat(context: Context?, key: String): Float? {
-        return context?.getSharedPreferences(sharedName, mode)?.getFloat(key, -1.0f)
+        return getSharedPreferences(context)?.getFloat(key, -1.0f)
     }
 
     @JvmStatic
     fun getInt(context: Context?, key: String): Int? {
-        return context?.getSharedPreferences(sharedName, mode)?.getInt(key, -1)
+        return getSharedPreferences(context)?.getInt(key, -1)
+    }
+
+    @JvmStatic
+    fun getInt(context: Context?, key: String, default: Int): Int? {
+        return getSharedPreferences(context)?.getInt(key, default)
     }
 }

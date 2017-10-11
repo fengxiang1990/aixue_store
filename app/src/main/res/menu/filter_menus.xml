@@ -1,16 +1,14 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item
-        android:id="@+id/all"
-        android:title="@string/nav_all"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/master"
-        android:title="@string/nav_master"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/pro"
-        android:title="@string/nav_pro"
-        app:showAsAction="never" />
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/env1"
+            android:title="@string/nav_test_env1"
+            app:showAsAction="never" />
+        <item
+            android:id="@+id/env2"
+            android:title="@string/nav_test_env2"
+            app:showAsAction="never" />
+    </group>
 </menu>

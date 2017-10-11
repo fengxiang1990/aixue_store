@@ -7,10 +7,8 @@ import io.reactivex.Flowable
 
 class AppPressenter(appDataRepostory: AppDataRepostory, appView: AppContract.View) : AppContract.Pressenter {
 
-    val tag = "AppPressenter"
 
     val TYPE_ANDROID = 2
-    val TYPE_IOS = 1
 
     private var mAppView: AppContract.View = checkNotNull(appView)
 
@@ -20,24 +18,31 @@ class AppPressenter(appDataRepostory: AppDataRepostory, appView: AppContract.Vie
     override fun loadAppInfos(filter: Filter) {
         mAppView.showRefresh(true)
         mTasksRepository.loadAppInfos(Config.uKey, Config._api_key)
-                .subscribe({ response ->
+                ?.subscribe({ response ->
                     val baseInfo = response.data
+                    if (baseInfo == null) {
+                        mAppView.showApps(ArrayList())
+                        mAppView.showRefresh(false)
+                        return@subscribe
+                    }
                     when (filter) {
-                        Filter.ALL -> mAppView.showApps(Flowable.fromIterable(baseInfo?.list)
+                        Filter.ALL -> mAppView.showApps(Flowable.fromIterable(baseInfo!!.list)
                                 .filter({ t: AppInfo ->
                                     t.appType?.toInt() == TYPE_ANDROID
                                 })
                                 .toList().blockingGet())
-                        Filter.MASTER -> mAppView.showApps(Flowable.fromIterable(baseInfo?.list)
+                        Filter.MASTER -> mAppView.showApps(Flowable.fromIterable(baseInfo!!.list)
                                 .filter({ t: AppInfo ->
                                     !t.appIdentifier!!.contains(".pro")
                                             && t.appType?.toInt() == TYPE_ANDROID
+                                            && !t.appIdentifier!!.contains("aixuestore")
                                 })
                                 .toList().blockingGet())
-                        Filter.PRO -> mAppView.showApps(Flowable.fromIterable(baseInfo?.list)
+                        Filter.PRO -> mAppView.showApps(Flowable.fromIterable(baseInfo!!.list)
                                 .filter({ t: AppInfo ->
                                     t.appIdentifier!!.contains(".pro")
                                             && t.appType?.toInt() == TYPE_ANDROID
+                                            && !t.appIdentifier!!.contains("aixuestore")
                                 })
                                 .toList().blockingGet())
                     }

@@ -12,12 +12,58 @@ android {
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
-    buildTypes {
+
+    signingConfigs {
+        def Properties keyProps = new Properties()
+        keyProps["store"] = 'wenbaedu.keystore'
+        keyProps["alias"] = 'android'
+        keyProps["storePass"] = 'wenba2012'
+        keyProps["pass"] = 'wenba2012'
+
+        debug {
+            storeFile file(keyProps["store"])
+            keyAlias keyProps["alias"]
+            storePassword keyProps["storePass"]
+            keyPassword keyProps["pass"]
+        }
         release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            storeFile file(keyProps["store"])
+            keyAlias keyProps["alias"]
+            storePassword keyProps["storePass"]
+            keyPassword keyProps["pass"]
         }
     }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.debug
+        }
+        release {
+            minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+            //注意要添加签名
+            signingConfig signingConfigs.release
+            //自定义apk名字
+            applicationVariants.all { variant ->
+                variant.outputs.each { output ->
+                    String fileName
+                    if (variant.buildType.name == 'release') {
+                        fileName = "aixuestore-${defaultConfig.versionName}-${releaseTime()}.apk".toLowerCase()
+                    } else if (variant.buildType.name == 'debug') {
+                        fileName = "aixuestore-debug.apk".toLowerCase()
+                    }
+                    output.outputFile = new File(
+                            output.outputFile.parent, fileName)
+                }
+
+            }
+        }
+    }
+
 }
 
 dependencies {
@@ -43,3 +89,9 @@ dependencies {
     compile 'com.github.bumptech.glide:glide:3.+'
     testCompile 'junit:junit:4.12'
 }
+
+
+def releaseTime() {
+    return new Date().format("MM-dd-HH-mm", TimeZone.getTimeZone("GMT+08:00"))
+}
+

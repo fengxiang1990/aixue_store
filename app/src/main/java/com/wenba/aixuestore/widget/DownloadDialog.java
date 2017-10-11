@@ -9,9 +9,11 @@ import com.wenba.aixuestore.R;
 public class DownloadDialog extends ProgressDialog {
 
     CallBack callBack;
+    Context context;
 
     public DownloadDialog(Context context, CallBack callBack) {
         this(context);
+        this.context = context;
         this.callBack = callBack;
     }
 
@@ -36,6 +38,12 @@ public class DownloadDialog extends ProgressDialog {
 
     public void update(Integer progress) {
         setProgress(progress);
+    }
+
+    public void dismiss() {
+        super.dismiss();
+        this.context = null;
+        this.callBack = null;
     }
 
     public interface CallBack {

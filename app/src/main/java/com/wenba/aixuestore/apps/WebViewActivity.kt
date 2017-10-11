@@ -1,9 +1,5 @@
 package com.wenba.aixuestore.apps
 
-import com.wenba.aixuestore.R
-import com.wenba.aixuestore.util.Config
-import com.wenba.aixuestore.util.UrlMapping
-import com.wenba.aixuestore.widget.DownloadDialog
 import android.app.DownloadManager
 import android.content.Context
 import android.content.Intent
@@ -16,8 +12,14 @@ import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import com.wenba.aixuestore.R
+import com.wenba.aixuestore.util.Config
+import com.wenba.aixuestore.util.UrlMapping
+import com.wenba.aixuestore.widget.DownloadDialog
 import kotlinx.android.synthetic.main.activity_web_view.*
 import java.io.File
+import java.math.BigDecimal
+import java.math.RoundingMode
 import java.net.URLDecoder
 
 
@@ -33,6 +35,7 @@ class WebViewActivity : AppCompatActivity(), DownloadDialog.CallBack {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        downloadDialog = DownloadDialog(this@WebViewActivity, this@WebViewActivity)
         setContentView(R.layout.activity_web_view)
         downloadManager = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
         setSupportActionBar(toolbar)
@@ -71,38 +74,37 @@ class WebViewActivity : AppCompatActivity(), DownloadDialog.CallBack {
 
     var openfile: Boolean = false
 
-    var handler: Handler = object : Handler() {
+    val handler: Handler = object : Handler() {
         override fun handleMessage(msg: Message?) {
             super.handleMessage(msg)
-            when (downloadDialog) {
-                null -> downloadDialog = DownloadDialog(this@WebViewActivity, this@WebViewActivity)
-            }
             when (downloadDialog?.isShowing) {
                 false -> downloadDialog?.show()
             }
             downloadDialog?.update(msg?.what)
-            when (msg?.what) {
-                100 -> {
-                    postDelayed({
-                        downloadDialog?.dismiss()
-                        if (!openfile) {
-                            val fileName = getExternalFilesDir(null).path + File.separator + Environment.DIRECTORY_DOWNLOADS + File.separator + URLDecoder.decode(FILE_NAME)
-                            Log.e(tag, "fileName->" + fileName)
-                            val file = File(fileName)
-                            val intent = Intent(Intent.ACTION_VIEW)
-                            var data: Uri
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                                data = FileProvider.getUriForFile(this@WebViewActivity, "com.wenba.aixuestore.fileprovider", file)
-                                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                            } else {
-                                data = Uri.fromFile(file)
-                            }
-                            intent.setDataAndType(data, "application/vnd.android.package-archive")
+            if (msg?.what!! >= 100) {
+                postDelayed({
+                    downloadDialog?.dismiss()
+                    if (!openfile) {
+                        val fileName = getExternalFilesDir(null).path + File.separator + Environment.DIRECTORY_DOWNLOADS + File.separator + URLDecoder.decode(FILE_NAME)
+                        Log.e(tag, "fileName->" + fileName)
+                        val file = File(fileName)
+                        val intent = Intent(Intent.ACTION_VIEW)
+                        var data: Uri
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                            data = FileProvider.getUriForFile(this@WebViewActivity, "com.wenba.aixuestore.fileprovider", file)
+                            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        } else {
+                            data = Uri.fromFile(file)
+                        }
+                        intent.setDataAndType(data, "application/vnd.android.package-archive")
+                        try {
                             startActivityForResult(intent, REQ_INSTALL)
                             openfile = true
+                        } catch (e: Exception) {
+                            e.printStackTrace()
                         }
-                    }, 1000)
-                }
+                    }
+                }, 1000)
             }
         }
     }
@@ -120,11 +122,14 @@ class WebViewActivity : AppCompatActivity(), DownloadDialog.CallBack {
             val query = DownloadManager.Query().setFilterById(currentDownloadId)
             val cursor = downloadManager!!.query(query)
             while (cursor.moveToNext()) {
-                val mDownload_so_far = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR))
-                val mDownload_all = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
-                val mProgress = mDownload_so_far * 100 / mDownload_all
+                val mDownload_so_far = cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR))
+                val mDownload_all = cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
+                val bdc = BigDecimal(mDownload_so_far)
+                val bdt = BigDecimal(mDownload_all)
+                val mProgressd = bdc.divide(bdt, 2, RoundingMode.HALF_UP).toDouble().times(100)
+                val progress = mProgressd.toInt()
                 val message = handler.obtainMessage()
-                message.what = mProgress
+                message.what = progress
                 handler.sendMessage(message)
             }
         }

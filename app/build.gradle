@@ -8,7 +8,7 @@ android {
         applicationId "com.wenba.aixuestore"
         minSdkVersion 21
         targetSdkVersion 25
-        versionCode 1
+        versionCode buildVersionCode()
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
@@ -95,3 +95,23 @@ def releaseTime() {
     return new Date().format("MM-dd-HH-mm", TimeZone.getTimeZone("GMT+08:00"))
 }
 
+def buildVersionCode() {
+    def versionPropsFile = file('version.properties')
+    if (versionPropsFile.canRead()) {
+        //载入version.properties
+        Properties versionProps = new Properties()
+        versionProps.load(new FileInputStream(versionPropsFile))
+        //从version.properties根据关键字"VERSION_CODE"取Integer
+        def verCode = versionProps['VERSION_CODE'].toInteger()
+        //判断build模式，如果是发布模式（':app:assembleRelease'）则自增版本号，并且写回version.properties文件中
+        def runTasks = gradle.startParameter.taskNames
+        if (':app:assembleRelease' in runTasks) {
+            versionProps['VERSION_CODE'] = (++verCode).toString()
+            versionProps.store(versionPropsFile.newWriter(), null)
+            System.out.println("version code ->" + versionProps['VERSION_CODE'].toInteger())
+            return versionProps['VERSION_CODE'].toInteger()
+        }
+
+    }
+    return 1
+}

@@ -82,6 +82,14 @@ class AppDetailActivity : AppCompatActivity(), AppContract.DetailView {
                 text3.text = otherappsBean.appBuildVersion
                 text4.text = otherappsBean.appCreated
                 ll_history.addView(itemView)
+                itemView.isClickable = true
+                itemView.setOnClickListener {
+                    val intent = Intent(this@AppDetailActivity, AppDetailActivity::class.java)
+                    intent.putExtra("aKey", otherappsBean.appKey)
+                    intent.putExtra("appName", otherappsBean.appName)
+                    startActivity(intent)
+                    finish()
+                }
             }
         }
 

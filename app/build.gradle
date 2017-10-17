@@ -52,7 +52,8 @@ android {
                 variant.outputs.each { output ->
                     String fileName
                     if (variant.buildType.name == 'release') {
-                        fileName = "aixuestore-${defaultConfig.versionName}-${releaseTime()}.apk".toLowerCase()
+                        //fileName = "aixuestore-${defaultConfig.versionName}-${releaseTime()}.apk".toLowerCase()
+                        fileName = "aixuestore-release.apk"
                     } else if (variant.buildType.name == 'debug') {
                         fileName = "aixuestore-debug.apk".toLowerCase()
                     }
@@ -87,6 +88,7 @@ dependencies {
     compile 'cn.finalteam.loadingviewfinal:loading-more-view:1.0.1'
     compile 'cn.finalteam.loadingviewfinal:swipe-refresh-layout:1.0.1'
     compile 'com.github.bumptech.glide:glide:3.+'
+    compile 'com.liulishuo.filedownloader:library:1.6.8'
     testCompile 'junit:junit:4.12'
 }
 

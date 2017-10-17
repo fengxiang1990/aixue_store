@@ -1,17 +1,20 @@
 package com.wenba.aixuestore.apps
 
-import android.app.DownloadManager
-import android.content.Context
 import android.content.Intent
-import android.database.ContentObserver
 import android.graphics.Bitmap
 import android.net.Uri
-import android.os.*
+import android.os.Build
+import android.os.Bundle
+import android.os.Handler
+import android.os.Message
 import android.support.v4.content.FileProvider
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import com.liulishuo.filedownloader.BaseDownloadTask
+import com.liulishuo.filedownloader.FileDownloadListener
+import com.liulishuo.filedownloader.FileDownloader
 import com.wenba.aixuestore.R
 import com.wenba.aixuestore.util.Config
 import com.wenba.aixuestore.util.UrlMapping
@@ -26,18 +29,16 @@ import java.net.URLDecoder
 class WebViewActivity : AppCompatActivity(), DownloadDialog.CallBack {
 
     val tag = "WebViewActivity"
-
+    var currentTask: BaseDownloadTask? = null
     val REQ_INSTALL = 10000
-    var downloadManager: DownloadManager? = null
     var FILE_NAME: String? = null
-    var currentDownloadId: Long = -1
     var downloadDialog: DownloadDialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        FileDownloader.setup(this)
         downloadDialog = DownloadDialog(this@WebViewActivity, this@WebViewActivity)
         setContentView(R.layout.activity_web_view)
-        downloadManager = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(false)
         supportActionBar?.title = getString(R.string.str_app_download)
@@ -55,17 +56,46 @@ class WebViewActivity : AppCompatActivity(), DownloadDialog.CallBack {
 
         webView.setDownloadListener { url, userAgent, contentDisposition, mimetype, contentLength ->
             FILE_NAME = appName + ".apk"
-            val fileName = getExternalFilesDir(null).path + File.separator + Environment.DIRECTORY_DOWNLOADS + File.separator + URLDecoder.decode(FILE_NAME)
+            val fileName = externalCacheDir.path + File.separator + URLDecoder.decode(FILE_NAME)
             val file = File(fileName)
             if (file.exists()) {
                 file.delete()
             }
-            val request = DownloadManager.Request(Uri.parse(url))
-            request.setDestinationInExternalFilesDir(this@WebViewActivity, Environment.DIRECTORY_DOWNLOADS, FILE_NAME)
-            request.setTitle(appName)
-            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-            currentDownloadId = downloadManager!!.enqueue(request)
-            contentResolver.registerContentObserver(Uri.parse("content://downloads/"), true, DownloadObserver())
+            FileDownloader.getImpl().create(url)
+                    .setPath(fileName)
+                    .setListener(object : FileDownloadListener() {
+                        override fun pending(task: BaseDownloadTask, soFarBytes: Int, totalBytes: Int) {}
+
+                        override fun connected(task: BaseDownloadTask?, etag: String?, isContinue: Boolean, soFarBytes: Int, totalBytes: Int) {
+                            currentTask = task
+                        }
+
+                        override fun progress(task: BaseDownloadTask, soFarBytes: Int, totalBytes: Int) {
+                            val bdc = BigDecimal(soFarBytes)
+                            val bdt = BigDecimal(totalBytes)
+                            val mProgressd = bdc.divide(bdt, 2, RoundingMode.HALF_UP).toDouble().times(100)
+                            val progress = mProgressd.toInt()
+                            val message = handler.obtainMessage()
+                            message.what = progress
+                            handler.sendMessage(message)
+                        }
+
+                        override fun blockComplete(task: BaseDownloadTask?) {}
+
+                        override fun retry(task: BaseDownloadTask?, ex: Throwable?, retryingTimes: Int, soFarBytes: Int) {}
+
+                        override fun completed(task: BaseDownloadTask) {
+                            val message = handler.obtainMessage()
+                            message.what = 100
+                            handler.sendMessage(message)
+                        }
+
+                        override fun paused(task: BaseDownloadTask, soFarBytes: Int, totalBytes: Int) {}
+
+                        override fun error(task: BaseDownloadTask, e: Throwable) {}
+
+                        override fun warn(task: BaseDownloadTask) {}
+                    }).start()
         }
         var url = UrlMapping.INSTALL_DOMAIN + "?_api_key=" + Config._api_key + "&aKey=" + aKey
         webView.loadUrl(url)
@@ -85,8 +115,7 @@ class WebViewActivity : AppCompatActivity(), DownloadDialog.CallBack {
                 postDelayed({
                     downloadDialog?.dismiss()
                     if (!openfile) {
-                        val fileName = getExternalFilesDir(null).path + File.separator + Environment.DIRECTORY_DOWNLOADS + File.separator + URLDecoder.decode(FILE_NAME)
-                        Log.e(tag, "fileName->" + fileName)
+                        val fileName = externalCacheDir.path + File.separator + URLDecoder.decode(FILE_NAME)
                         val file = File(fileName)
                         val intent = Intent(Intent.ACTION_VIEW)
                         var data: Uri
@@ -110,29 +139,8 @@ class WebViewActivity : AppCompatActivity(), DownloadDialog.CallBack {
     }
 
     override fun onCancel() {
-        downloadManager?.remove(currentDownloadId)
+        currentTask?.cancel()
         finish()
-    }
-
-
-    inner class DownloadObserver : ContentObserver(handler) {
-
-        override fun onChange(selfChange: Boolean) {
-            super.onChange(selfChange)
-            val query = DownloadManager.Query().setFilterById(currentDownloadId)
-            val cursor = downloadManager!!.query(query)
-            while (cursor.moveToNext()) {
-                val mDownload_so_far = cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR))
-                val mDownload_all = cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
-                val bdc = BigDecimal(mDownload_so_far)
-                val bdt = BigDecimal(mDownload_all)
-                val mProgressd = bdc.divide(bdt, 2, RoundingMode.HALF_UP).toDouble().times(100)
-                val progress = mProgressd.toInt()
-                val message = handler.obtainMessage()
-                message.what = progress
-                handler.sendMessage(message)
-            }
-        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

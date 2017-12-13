@@ -70,6 +70,7 @@
                         android:layout_height="wrap_content"
                         android:textColor="@color/text_black_gray"
                         android:textSize="15sp"
+                        android:singleLine="true"
                         tools:text="build 8.6" />
 
                     <TextView
@@ -79,6 +80,7 @@
                         android:layout_marginLeft="10dp"
                         android:textColor="@color/text_black_gray"
                         android:textSize="14sp"
+                        android:singleLine="true"
                         tools:text="Android" />
                 </LinearLayout>
 
@@ -89,6 +91,7 @@
                     android:layout_marginTop="10dp"
                     android:textColor="@color/text_black_gray_dark"
                     android:textSize="15sp"
+                    android:singleLine="true"
                     tools:text="2小时前" />
             </LinearLayout>
 

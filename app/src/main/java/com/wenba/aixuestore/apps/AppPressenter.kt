@@ -19,13 +19,15 @@ class AppPressenter(context: Context, appDataRepostory: AppDataRepostory, appVie
     private var mTasksRepository: AppDataRepostory = checkNotNull(appDataRepostory)
 
 
-    override fun loadAppInfos(filter: Filter) {
+    override fun loadAppInfos(filter: Filter,page:Int) {
         if (!NetWorkUtils.checkNetWork(mContext)) {
             mAppView.showNetError()
+            mAppView.showRefresh(false)
+            mAppView.onLoadComplete()
             return
         }
         mAppView.showRefresh(true)
-        mTasksRepository.loadAppInfos(Config.uKey, Config._api_key)
+        mTasksRepository.loadAppInfos(Config.uKey, Config._api_key,page)
                 ?.subscribe({ response ->
                     val baseInfo = response.data
                     if (baseInfo == null) {
@@ -55,6 +57,7 @@ class AppPressenter(context: Context, appDataRepostory: AppDataRepostory, appVie
                                 .toList().blockingGet())
                     }
                     mAppView.showRefresh(false)
+                    mAppView.onLoadComplete()
                 })
     }
 
@@ -62,4 +65,6 @@ class AppPressenter(context: Context, appDataRepostory: AppDataRepostory, appVie
     override fun start() {
         loadAppInfos()
     }
+
+
 }

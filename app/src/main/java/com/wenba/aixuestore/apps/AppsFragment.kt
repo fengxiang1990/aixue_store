@@ -13,6 +13,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import cn.finalteam.loadingviewfinal.RecyclerViewFinal
 import cn.finalteam.loadingviewfinal.SwipeRefreshLayoutFinal
 import com.bumptech.glide.Glide
 import com.wenba.ailearn.lib.extentions.snackbar
@@ -22,24 +23,30 @@ import com.wenba.aixuestore.util.UrlMapping
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration
 
 class AppsFragment : Fragment(), AppContract.View {
+    override fun onLoadComplete() {
+        recycleView?.onLoadMoreComplete()
+    }
+
+    var page = 1
 
     override fun showNetError() {
         view?.snackbar("网络不可用，请检查网络设置")
-        showRefresh(false)
     }
 
     val appInfos = ArrayList<AppInfo>()
     var adapter: AppAdapter? = null
     var pressenter: AppContract.Pressenter? = null
     var filter = Filter.MASTER
-    var recycleView: RecyclerView? = null
+    var recycleView: RecyclerViewFinal? = null
     var swipeRefreshLayout: SwipeRefreshLayoutFinal? = null
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater?.inflate(R.layout.fragment_apps, container, false)
-        recycleView = view?.findViewById(R.id.recycleView) as RecyclerView
+        recycleView = view?.findViewById(R.id.recycleView) as RecyclerViewFinal
         swipeRefreshLayout = view?.findViewById(R.id.swipeRefreshLayout) as SwipeRefreshLayoutFinal
         recycleView?.overScrollMode = View.OVER_SCROLL_NEVER
+        recycleView?.setHasLoadMore(true)
+        recycleView?.setNoLoadMoreHideView(true)
         recycleView?.layoutManager = LinearLayoutManager(activity)
         recycleView?.addItemDecoration(HorizontalDividerItemDecoration.Builder(activity)
                 .color(Color.WHITE)
@@ -49,6 +56,7 @@ class AppsFragment : Fragment(), AppContract.View {
         recycleView?.adapter = adapter
         swipeRefreshLayout?.isRefreshing = true
         swipeRefreshLayout?.setOnRefreshListener({
+            page = 1
             pressenter?.loadAppInfos(filter)
         })
 
@@ -59,6 +67,9 @@ class AppsFragment : Fragment(), AppContract.View {
             "all" -> filter = Filter.ALL
         }
         pressenter?.loadAppInfos(filter)
+        recycleView?.setOnLoadMoreListener {
+            pressenter?.loadAppInfos(filter, page++)
+        }
         return view
     }
 

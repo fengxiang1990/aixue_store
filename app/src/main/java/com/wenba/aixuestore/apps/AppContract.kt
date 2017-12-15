@@ -15,6 +15,7 @@ interface AppContract {
         fun toAppDetail(appKey: String, appName: String)
         fun toInstall(aKey: String, appName: String)
         fun showNetError()
+        fun onLoadComplete()
     }
 
     interface DetailView : BaseView<Pressenter> {
@@ -28,8 +29,7 @@ interface AppContract {
 
     interface Pressenter : BasePresenter {
 
-        fun loadAppInfos(filter: Filter = Filter.ALL)
-
+        fun loadAppInfos(filter: Filter = Filter.ALL,page:Int = 1)
 
     }
 }

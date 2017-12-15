@@ -1,10 +1,10 @@
 package com.wenba.aixuestore.apps
 
 import android.util.Log
+import com.wenba.ailearn.lib.extentions.toBean
 import com.wenba.aixuestore.data.AppInfoDetail
 import com.wenba.aixuestore.data.source.AppDataRepostory
 import com.wenba.aixuestore.util.Config
-import com.wenba.aixuestore.util.JsonWrapper
 
 class AppDetailPressenter(appDataRepostory: AppDataRepostory, appView: AppContract.DetailView) : AppContract.DetailPressenter {
 
@@ -20,7 +20,7 @@ class AppDetailPressenter(appDataRepostory: AppDataRepostory, appView: AppContra
     override fun loadAppDetail(aKey: String) {
         mTasksRepository.loadAppDetail(aKey, Config._api_key)
                 ?.subscribe({ jsonObj ->
-                    val appInfoDetail = JsonWrapper.parse(jsonObj.toString(), AppInfoDetail::class.java)
+                    val appInfoDetail = jsonObj.toString().toBean(AppInfoDetail::class.java)
                     mAppView.showAppDetail(appInfoDetail)
                 }, { e ->
                     e.printStackTrace()

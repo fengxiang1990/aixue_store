@@ -14,6 +14,7 @@ interface AppContract {
         fun showApps(appinfos: List<AppInfo>?)
         fun toAppDetail(appKey: String, appName: String)
         fun toInstall(aKey: String, appName: String)
+        fun showNetError()
     }
 
     interface DetailView : BaseView<Pressenter> {

@@ -1,8 +1,5 @@
 package com.wenba.aixuestore.apps
 
-import com.wenba.aixuestore.R
-import com.wenba.aixuestore.data.AppInfo
-import com.wenba.aixuestore.util.UrlMapping
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
@@ -18,9 +15,18 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import cn.finalteam.loadingviewfinal.SwipeRefreshLayoutFinal
 import com.bumptech.glide.Glide
+import com.wenba.ailearn.lib.extentions.snackbar
+import com.wenba.aixuestore.R
+import com.wenba.aixuestore.data.AppInfo
+import com.wenba.aixuestore.util.UrlMapping
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration
 
 class AppsFragment : Fragment(), AppContract.View {
+
+    override fun showNetError() {
+        view?.snackbar("网络不可用，请检查网络设置")
+        showRefresh(false)
+    }
 
     val appInfos = ArrayList<AppInfo>()
     var adapter: AppAdapter? = null

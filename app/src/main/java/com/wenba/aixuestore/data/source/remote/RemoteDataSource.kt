@@ -2,11 +2,11 @@ package com.wenba.aixuestore.data.source.remote
 
 import android.util.Log
 import com.google.gson.reflect.TypeToken
+import com.wenba.ailearn.lib.extentions.toBean
 import com.wenba.aixuestore.data.source.AppDataSource
 import com.wenba.aixuestore.data.source.BaseAppInfo
 import com.wenba.aixuestore.network.BaseResponse
 import com.wenba.aixuestore.network.OkHttpKotlinHelper
-import com.wenba.aixuestore.util.JsonWrapper
 import com.wenba.aixuestore.util.UrlMapping
 import io.reactivex.Flowable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -46,7 +46,7 @@ class RemoteDataSource : AppDataSource {
                     val jsonObject = JSONObject(result)
                     val code = jsonObject["code"]
                     if (code == 0) {
-                        Flowable.just(JsonWrapper.parse<BaseResponse<BaseAppInfo>>(result, object : TypeToken<BaseResponse<BaseAppInfo>>() {}.type))
+                        Flowable.just(result!!.toBean<BaseResponse<BaseAppInfo>>(object : TypeToken<BaseResponse<BaseAppInfo>>() {}.type))
                     } else {
                         Flowable.just(BaseResponse())
                     }

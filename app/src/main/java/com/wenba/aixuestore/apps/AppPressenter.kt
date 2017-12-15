@@ -1,14 +1,18 @@
 package com.wenba.aixuestore.apps
 
+import android.content.Context
+import com.wenba.ailearn.lib.extentions.NetWorkUtils
 import com.wenba.aixuestore.data.AppInfo
 import com.wenba.aixuestore.data.source.AppDataRepostory
 import com.wenba.aixuestore.util.Config
 import io.reactivex.Flowable
 
-class AppPressenter(appDataRepostory: AppDataRepostory, appView: AppContract.View) : AppContract.Pressenter {
+class AppPressenter(context: Context, appDataRepostory: AppDataRepostory, appView: AppContract.View) : AppContract.Pressenter {
 
 
     val TYPE_ANDROID = 2
+
+    private var mContext: Context = checkNotNull(context)
 
     private var mAppView: AppContract.View = checkNotNull(appView)
 
@@ -16,6 +20,10 @@ class AppPressenter(appDataRepostory: AppDataRepostory, appView: AppContract.Vie
 
 
     override fun loadAppInfos(filter: Filter) {
+        if (!NetWorkUtils.checkNetWork(mContext)) {
+            mAppView.showNetError()
+            return
+        }
         mAppView.showRefresh(true)
         mTasksRepository.loadAppInfos(Config.uKey, Config._api_key)
                 ?.subscribe({ response ->

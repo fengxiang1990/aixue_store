@@ -26,49 +26,59 @@ class AppPressenter(context: Context, appDataRepostory: AppDataRepostory, appVie
     }
 
 
-    override fun loadAppInfos(filter: Filter, page: Int) {
-        Log.d(tag, "page-->" + page)
+    override fun loadAppInfos(filter: Filter) {
+        Log.e(tag, "filter->" + filter.toString())
         if (!NetWorkUtils.checkNetWork(mContext)) {
             mAppView.showNetError()
             mAppView.onLoadComplete()
             return
         }
-        mTasksRepository.loadAppInfos(Config.uKey, Config._api_key, page)
-                ?.subscribe({ response ->
-                    val baseInfo = response.data
-                    if (baseInfo == null) {
-                        mAppView.showApps(ArrayList())
-                        mAppView.onLoadComplete()
-                        return@subscribe
-                    }
-                    when (filter) {
-                        Filter.ALL -> mAppView.showApps(Flowable.fromIterable(baseInfo!!.list)
-                                .filter({ t: AppInfo ->
-                                    t.appType?.toInt() == TYPE_ANDROID
-                                })
-                                .toList().blockingGet())
-                        Filter.MASTER -> mAppView.showApps(Flowable.fromIterable(baseInfo!!.list)
-                                .filter({ t: AppInfo ->
-                                    !t.appIdentifier!!.contains(".pro")
-                                            && t.appType?.toInt() == TYPE_ANDROID
-                                            && !t.appIdentifier!!.contains("aixuestore")
-                                })
-                                .toList().blockingGet())
-                        Filter.PRO -> mAppView.showApps(Flowable.fromIterable(baseInfo!!.list)
-                                .filter({ t: AppInfo ->
-                                    t.appIdentifier!!.contains(".pro")
-                                            && t.appType?.toInt() == TYPE_ANDROID
-                                            && !t.appIdentifier!!.contains("aixuestore")
-                                })
-                                .toList().blockingGet())
-                    }
-                    mAppView.onLoadComplete()
+
+        val list = ArrayList<AppInfo>()
+        mTasksRepository.loadAppInfos(Config.uKey, Config._api_key)
+                ?.subscribe({ data ->
+                    Log.e(tag, "data->" + data.toString())
+                    Flowable.just(data)
+                            .filter {
+                                it.data!!.list!!.isNotEmpty()
+                            }
+                            .flatMap({
+                                Flowable.just(it.data)
+                            }).subscribe({
+                        list.addAll(it!!.list!!)
+                    }, { e ->
+                        e.printStackTrace()
+                    }, {
+                        when (filter) {
+                            Filter.ALL -> mAppView.showApps(Flowable.fromIterable(list)
+                                    .filter({ t: AppInfo ->
+                                        t.appType?.toInt() == TYPE_ANDROID
+                                    })
+                                    .toList().blockingGet())
+                            Filter.MASTER -> mAppView.showApps(Flowable.fromIterable(list)
+                                    .filter({ t: AppInfo ->
+                                        !t.appIdentifier!!.contains(".pro")
+                                                && t.appType?.toInt() == TYPE_ANDROID
+                                                && !t.appIdentifier!!.contains("aixuestore")
+                                    })
+                                    .toList().blockingGet())
+                            Filter.PRO -> mAppView.showApps(Flowable.fromIterable(list)
+                                    .filter({ t: AppInfo ->
+                                        t.appIdentifier!!.contains(".pro")
+                                                && t.appType?.toInt() == TYPE_ANDROID
+                                                && !t.appIdentifier!!.contains("aixuestore")
+                                    })
+                                    .toList().blockingGet())
+                        }
+                    })
                 })
+
+        mAppView.onLoadComplete()
+
     }
 
 
     override fun start() {
-        loadAppInfos()
     }
 
 

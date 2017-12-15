@@ -28,7 +28,7 @@ interface AppContract {
 
     interface Pressenter : BasePresenter {
 
-        fun loadAppInfos(filter: Filter = Filter.ALL, page: Int = 1)
+        fun loadAppInfos(filter: Filter = Filter.MASTER)
 
     }
 }

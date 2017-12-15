@@ -33,15 +33,16 @@ class RemoteDataSource : AppDataSource {
     }
 
 
-    override fun loadAppInfos(ukey: String, _api_key: String,page:Int): Flowable<BaseResponse<BaseAppInfo>> {
-        return Flowable.just(UrlMapping.ListMyPublished)
+    override fun loadAppInfos(ukey: String, _api_key: String): Flowable<BaseResponse<BaseAppInfo>> {
+        val map = HashMap<String, Any>()
+        map.put("uKey", ukey)
+        map.put("_api_key", _api_key)
+        return Flowable.range(1, 5)
                 .subscribeOn(Schedulers.io())
-                .flatMap({ url ->
-                    val map = HashMap<String, Any>()
-                    map.put("uKey", ukey)
-                    map.put("_api_key", _api_key)
-                    map.put("page",page.toString())
-                    val response = OkHttpKotlinHelper.postFormSync(url, map)
+                .flatMap({ page ->
+                    Log.e(tag, "page->" + page)
+                    map.put("page", page.toString())
+                    val response = OkHttpKotlinHelper.postFormSync(UrlMapping.ListMyPublished, map)
                     val result = response.body()?.string()
                     Log.e(tag, "result->" + result)
                     val jsonObject = JSONObject(result)
@@ -51,8 +52,7 @@ class RemoteDataSource : AppDataSource {
                     } else {
                         Flowable.just(BaseResponse())
                     }
-                })
-                .observeOn(AndroidSchedulers.mainThread())
+                }).observeOn(AndroidSchedulers.mainThread())
     }
 
 }

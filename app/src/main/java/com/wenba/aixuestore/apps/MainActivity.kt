@@ -38,11 +38,11 @@ class MainActivity : AppCompatActivity() {
         val fragments = arrayListOf<Fragment>(masterFragment, proFragment, allFragment)
 
         val repository = AppDataRepostory(RemoteDataSource())
-        masterFragment.pressenter = AppPressenter(this,repository, masterFragment)
-        proFragment.pressenter = AppPressenter(this,repository, proFragment)
-        allFragment.pressenter = AppPressenter(this,repository, allFragment)
-
+        masterFragment.pressenter = AppPressenter(this, repository, masterFragment)
+        proFragment.pressenter = AppPressenter(this, repository, proFragment)
+        allFragment.pressenter = AppPressenter(this, repository, allFragment)
         viewPager.adapter = MyPagerAdapter(fragments)
+        viewPager.offscreenPageLimit = 2
         tabLayout.addTab(tabLayout.newTab().setText(titles!![0]))
         tabLayout.addTab(tabLayout.newTab().setText(titles!![1]))
         tabLayout.addTab(tabLayout.newTab().setText(titles!![2]))

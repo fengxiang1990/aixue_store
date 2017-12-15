@@ -3,6 +3,7 @@ package com.wenba.aixuestore.apps
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
 import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -25,12 +26,12 @@ import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration
 
 class AppsFragment : Fragment(), AppContract.View {
 
+    val TAG = "AppsFragment"
+
     override fun onLoadComplete() {
         recycleView?.onLoadMoreComplete()
         swipeRefreshLayout?.onRefreshComplete()
     }
-
-    var page = 1
 
     override fun showNetError() {
         view?.snackbar("网络不可用，请检查网络设置")
@@ -48,7 +49,7 @@ class AppsFragment : Fragment(), AppContract.View {
         recycleView = view?.findViewById(R.id.recycleView) as RecyclerViewFinal
         swipeRefreshLayout = view?.findViewById(R.id.swipeRefreshLayout) as SwipeRefreshLayoutFinal
         recycleView?.overScrollMode = View.OVER_SCROLL_NEVER
-        recycleView?.setHasLoadMore(true)
+        recycleView?.setHasLoadMore(false)
         recycleView?.setLoadMoreMode(LoadMoreMode.SCROLL)
         recycleView?.setNoLoadMoreHideView(true)
         recycleView?.layoutManager = LinearLayoutManager(activity)
@@ -59,24 +60,24 @@ class AppsFragment : Fragment(), AppContract.View {
         adapter = AppAdapter(appInfos)
         recycleView?.adapter = adapter
         swipeRefreshLayout?.isRefreshing = true
-        swipeRefreshLayout?.setOnRefreshListener({
-            page = 1
-            pressenter?.loadAppInfos(filter)
-        })
-
         val tag = arguments["tag"] as String
+        Log.e(TAG, "tag->" + tag)
         when (tag) {
             "master" -> filter = Filter.MASTER
             "pro" -> filter = Filter.PRO
             "all" -> filter = Filter.ALL
         }
-        recycleView?.setOnLoadMoreListener {
-            pressenter?.loadAppInfos(filter, ++page)
-        }
-        pressenter?.start()
+        swipeRefreshLayout?.setOnRefreshListener({
+            pressenter?.loadAppInfos(filter)
+        })
+        handle.postDelayed({
+            pressenter?.loadAppInfos(filter)
+        }, 50)
+
         return view
     }
 
+    var handle = Handler()
 
     override fun toInstall(aKey: String, appName: String) {
         val intent = Intent(activity, WebViewActivity::class.java)
@@ -87,9 +88,7 @@ class AppsFragment : Fragment(), AppContract.View {
 
 
     override fun showApps(appinfos: List<AppInfo>?) {
-        if (page == 1) {
-            this.appInfos.clear()
-        }
+        this.appInfos.clear()
         this.appInfos.addAll(appinfos!!)
         adapter?.notifyDataSetChanged()
     }

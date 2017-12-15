@@ -70,10 +70,10 @@ class AppsFragment : Fragment(), AppContract.View {
             "pro" -> filter = Filter.PRO
             "all" -> filter = Filter.ALL
         }
-        pressenter?.loadAppInfos(filter)
         recycleView?.setOnLoadMoreListener {
             pressenter?.loadAppInfos(filter, ++page)
         }
+        pressenter?.start()
         return view
     }
 
@@ -102,6 +102,7 @@ class AppsFragment : Fragment(), AppContract.View {
     }
 
     override fun setPresenter(presenter: AppContract.Pressenter) {
+        //presenter.start()
     }
 
     inner class AppAdapter : RecyclerView.Adapter<AppAdapter.AppViewHolder> {

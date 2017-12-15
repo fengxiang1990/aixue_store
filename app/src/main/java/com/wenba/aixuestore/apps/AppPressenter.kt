@@ -21,6 +21,10 @@ class AppPressenter(context: Context, appDataRepostory: AppDataRepostory, appVie
 
     private var mTasksRepository: AppDataRepostory = checkNotNull(appDataRepostory)
 
+    init {
+        mAppView.setPresenter(this)
+    }
+
 
     override fun loadAppInfos(filter: Filter, page: Int) {
         Log.d(tag, "page-->" + page)

@@ -56,18 +56,18 @@ class AppPressenter(context: Context, appDataRepostory: AppDataRepostory, appVie
                                     })
                                     .toList().blockingGet())
                             Filter.MASTER -> mAppView.showApps(Flowable.fromIterable(list)
-                                    .filter({ t: AppInfo ->
-                                        !t.appIdentifier!!.contains(".pro")
+                                    .filter { t: AppInfo ->
+                                        !(t.appIdentifier!!.contains(".pro."))
                                                 && t.appType?.toInt() == TYPE_ANDROID
                                                 && !t.appIdentifier!!.contains("aixuestore")
-                                    })
+                                    }
                                     .toList().blockingGet())
                             Filter.PRO -> mAppView.showApps(Flowable.fromIterable(list)
-                                    .filter({ t: AppInfo ->
-                                        t.appIdentifier!!.contains(".pro")
+                                    .filter { t: AppInfo ->
+                                        (t.appIdentifier!!.contains(".pro."))
                                                 && t.appType?.toInt() == TYPE_ANDROID
                                                 && !t.appIdentifier!!.contains("aixuestore")
-                                    })
+                                    }
                                     .toList().blockingGet())
                         }
                     })

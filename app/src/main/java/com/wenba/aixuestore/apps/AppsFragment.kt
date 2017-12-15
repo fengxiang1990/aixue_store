@@ -13,6 +13,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import cn.finalteam.loadingviewfinal.LoadMoreMode
 import cn.finalteam.loadingviewfinal.RecyclerViewFinal
 import cn.finalteam.loadingviewfinal.SwipeRefreshLayoutFinal
 import com.bumptech.glide.Glide
@@ -23,8 +24,10 @@ import com.wenba.aixuestore.util.UrlMapping
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration
 
 class AppsFragment : Fragment(), AppContract.View {
+
     override fun onLoadComplete() {
         recycleView?.onLoadMoreComplete()
+        swipeRefreshLayout?.onRefreshComplete()
     }
 
     var page = 1
@@ -46,6 +49,7 @@ class AppsFragment : Fragment(), AppContract.View {
         swipeRefreshLayout = view?.findViewById(R.id.swipeRefreshLayout) as SwipeRefreshLayoutFinal
         recycleView?.overScrollMode = View.OVER_SCROLL_NEVER
         recycleView?.setHasLoadMore(true)
+        recycleView?.setLoadMoreMode(LoadMoreMode.SCROLL)
         recycleView?.setNoLoadMoreHideView(true)
         recycleView?.layoutManager = LinearLayoutManager(activity)
         recycleView?.addItemDecoration(HorizontalDividerItemDecoration.Builder(activity)
@@ -68,7 +72,7 @@ class AppsFragment : Fragment(), AppContract.View {
         }
         pressenter?.loadAppInfos(filter)
         recycleView?.setOnLoadMoreListener {
-            pressenter?.loadAppInfos(filter, page++)
+            pressenter?.loadAppInfos(filter, ++page)
         }
         return view
     }
@@ -82,14 +86,10 @@ class AppsFragment : Fragment(), AppContract.View {
     }
 
 
-    override fun showRefresh(isRefresh: Boolean) {
-        if (!isRefresh) {
-            swipeRefreshLayout?.onRefreshComplete()
-        }
-    }
-
     override fun showApps(appinfos: List<AppInfo>?) {
-        this.appInfos.clear()
+        if (page == 1) {
+            this.appInfos.clear()
+        }
         this.appInfos.addAll(appinfos!!)
         adapter?.notifyDataSetChanged()
     }

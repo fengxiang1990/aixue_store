@@ -1,6 +1,7 @@
 package com.wenba.aixuestore.apps
 
 import android.content.Context
+import android.util.Log
 import com.wenba.ailearn.lib.extentions.NetWorkUtils
 import com.wenba.aixuestore.data.AppInfo
 import com.wenba.aixuestore.data.source.AppDataRepostory
@@ -9,6 +10,8 @@ import io.reactivex.Flowable
 
 class AppPressenter(context: Context, appDataRepostory: AppDataRepostory, appView: AppContract.View) : AppContract.Pressenter {
 
+
+    val tag = this.javaClass.simpleName
 
     val TYPE_ANDROID = 2
 
@@ -19,20 +22,19 @@ class AppPressenter(context: Context, appDataRepostory: AppDataRepostory, appVie
     private var mTasksRepository: AppDataRepostory = checkNotNull(appDataRepostory)
 
 
-    override fun loadAppInfos(filter: Filter,page:Int) {
+    override fun loadAppInfos(filter: Filter, page: Int) {
+        Log.d(tag, "page-->" + page)
         if (!NetWorkUtils.checkNetWork(mContext)) {
             mAppView.showNetError()
-            mAppView.showRefresh(false)
             mAppView.onLoadComplete()
             return
         }
-        mAppView.showRefresh(true)
-        mTasksRepository.loadAppInfos(Config.uKey, Config._api_key,page)
+        mTasksRepository.loadAppInfos(Config.uKey, Config._api_key, page)
                 ?.subscribe({ response ->
                     val baseInfo = response.data
                     if (baseInfo == null) {
                         mAppView.showApps(ArrayList())
-                        mAppView.showRefresh(false)
+                        mAppView.onLoadComplete()
                         return@subscribe
                     }
                     when (filter) {
@@ -56,7 +58,6 @@ class AppPressenter(context: Context, appDataRepostory: AppDataRepostory, appVie
                                 })
                                 .toList().blockingGet())
                     }
-                    mAppView.showRefresh(false)
                     mAppView.onLoadComplete()
                 })
     }

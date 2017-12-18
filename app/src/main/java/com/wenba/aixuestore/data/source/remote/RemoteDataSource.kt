@@ -26,7 +26,7 @@ class RemoteDataSource : AppDataSource {
                     map.put("aKey", aKey)
                     map.put("_api_key", _api_key)
                     val response = OkHttpKotlinHelper.postFormSync(url, map)
-                    val result = response.body()?.string()
+                    val result = response.blockingFirst().body()?.string()
                     Flowable.just(JSONObject(result))
                 })
                 .observeOn(AndroidSchedulers.mainThread())
@@ -43,7 +43,7 @@ class RemoteDataSource : AppDataSource {
                     Log.e(tag, "page->" + page)
                     map.put("page", page.toString())
                     val response = OkHttpKotlinHelper.postFormSync(UrlMapping.ListMyPublished, map)
-                    val result = response.body()?.string()
+                    val result = response.blockingFirst().body()?.string()
                     Log.e(tag, "result->" + result)
                     val jsonObject = JSONObject(result)
                     val code = jsonObject["code"]

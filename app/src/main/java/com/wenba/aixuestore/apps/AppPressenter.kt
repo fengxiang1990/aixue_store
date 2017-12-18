@@ -28,11 +28,11 @@ class AppPressenter(context: Context, appDataRepostory: AppDataRepostory, appVie
 
     override fun loadAppInfos(filter: Filter) {
         Log.e(tag, "filter->" + filter.toString())
-        if (!NetWorkUtils.checkNetWork(mContext)) {
-            mAppView.showNetError()
-            mAppView.onLoadComplete()
-            return
-        }
+//        if (!NetWorkUtils.checkNetWork(mContext)) {
+//            mAppView.showNetError()
+//            mAppView.onLoadComplete()
+//            return
+//        }
 
         val list = ArrayList<AppInfo>()
         mTasksRepository.loadAppInfos(Config.uKey, Config._api_key)
@@ -45,9 +45,11 @@ class AppPressenter(context: Context, appDataRepostory: AppDataRepostory, appVie
                             .flatMap({
                                 Flowable.just(it.data)
                             }).subscribe({
+                        Log.e(tag, "data2->" + it!!.toString())
                         list.addAll(it!!.list!!)
                     }, { e ->
                         e.printStackTrace()
+                        mAppView.onLoadComplete()
                     }, {
                         when (filter) {
                             Filter.ALL -> mAppView.showApps(Flowable.fromIterable(list)
@@ -70,11 +72,9 @@ class AppPressenter(context: Context, appDataRepostory: AppDataRepostory, appVie
                                     }
                                     .toList().blockingGet())
                         }
+                        mAppView.onLoadComplete()
                     })
                 })
-
-        mAppView.onLoadComplete()
-
     }
 
 

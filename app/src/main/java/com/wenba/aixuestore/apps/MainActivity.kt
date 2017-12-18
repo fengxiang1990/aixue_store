@@ -11,6 +11,7 @@ import android.widget.PopupMenu
 import com.wenba.aixuestore.R
 import com.wenba.aixuestore.data.source.AppDataRepostory
 import com.wenba.aixuestore.data.source.remote.RemoteDataSource
+import com.wenba.aixuestore.network.OkHttpKotlinHelper
 import com.wenba.aixuestore.util.Config
 import com.wenba.aixuestore.util.SharedPreferenceUtil
 import kotlinx.android.synthetic.main.activity_main.*
